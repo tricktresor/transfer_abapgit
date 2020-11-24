@@ -1,12 +1,13 @@
 REPORT ztrcktrsr_transfer_abapgit.
 
 PARAMETERS p_repo TYPE zabapgit-value OBLIGATORY MATCHCODE OBJECT zabapgit_repo.
+PARAMETERS p_path type text100        OBLIGATORY DEFAULT '/'.
 PARAMETERS p_file TYPE text100        OBLIGATORY LOWER CASE.
 SELECTION-SCREEN PUSHBUTTON /35(30) TEXT-get USER-COMMAND $get.
 
 SELECTION-SCREEN SKIP 1.
 PARAMETERS p_gitusr TYPE string DEFAULT '' LOWER CASE.
-PARAMETERS p_gitpwd TYPE string.
+PARAMETERS p_gitpwd TYPE string            LOWER CASE.
 SELECTION-SCREEN PUSHBUTTON /35(30) TEXT-put USER-COMMAND $put.
 
 INITIALIZATION.
@@ -31,12 +32,15 @@ AT SELECTION-SCREEN OUTPUT.
 AT SELECTION-SCREEN.
   CASE sy-ucomm.
     WHEN '$GET'.
-      PERFORM get USING p_file.
+      PERFORM get USING p_path p_file.
     WHEN '$PUT'.
-      PERFORM put USING p_file.
+      PERFORM put USING p_path p_file.
   ENDCASE.
 
-FORM get USING file TYPE text100.
+FORM get
+  USING
+    path type text100
+    file TYPE text100.
 
   CHECK file IS NOT INITIAL.
 
@@ -46,7 +50,7 @@ FORM get USING file TYPE text100.
 
       DATA(lt_files) = lo_online->get_files_remote( ).
 
-      DATA(lv_data) = zcl_abapgit_convert=>xstring_to_string_utf8( iv_data = lt_files[ filename = file ]-data ).
+      DATA(lv_data) = zcl_abapgit_convert=>xstring_to_string_utf8( iv_data = lt_files[ path = path filename = file ]-data ).
 
       text->set_textstream( text = lv_data ).
       cl_gui_cfw=>flush( ).
@@ -60,7 +64,10 @@ FORM get USING file TYPE text100.
 
 ENDFORM.
 
-FORM put USING file TYPE text100.
+FORM put
+  USING
+    path type text100
+    file TYPE text100.
 
   TRY.
       text->get_textstream(
@@ -91,7 +98,7 @@ FORM put USING file TYPE text100.
           iv_merge_source = lo_online->get_current_remote( ) ).
 
       lo_stage->add(
-        iv_path     = '/'
+        iv_path     = conv #( path )
         iv_filename = lv_filename
         iv_data     = lv_data ).
 
@@ -147,6 +154,7 @@ FORM f4_filename.
   IF sy-subrc = 0.
     shlp-interface[ shlpfield = 'REPO' ]-value        = dynprofields[ fieldname = 'P_REPO' ]-fieldvalue.
     shlp-interface[ shlpfield = 'FILENAME' ]-valfield = 'P_FILE'.
+    shlp-interface[ shlpfield = 'PATH' ]-valfield = 'P_PATH'.
   ENDIF.
 
   DATA return_values TYPE tfw_ddshretval_tab.
@@ -159,6 +167,7 @@ FORM f4_filename.
 
   TRY.
       dynprofields[ fieldname = 'P_FILE' ]-fieldvalue = return_values[ retfield = 'P_FILE' ]-fieldval.
+      dynprofields[ fieldname = 'P_PATH' ]-fieldvalue = return_values[ retfield = 'P_PATH' ]-fieldval.
 
       CALL FUNCTION 'DYNP_VALUES_UPDATE'
         EXPORTING
