@@ -1,0 +1,3 @@
+= Demo file in docs folder
+
+This is a demonstration
