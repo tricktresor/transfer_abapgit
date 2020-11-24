@@ -55,8 +55,6 @@ FORM get
       text->set_textstream( text = lv_data ).
       cl_gui_cfw=>flush( ).
 
-    CATCH zcx_updownci_exception INTO DATA(lx_updownci).
-      WRITE: / lx_updownci->iv_text.
     CATCH cx_static_check INTO DATA(lx_error).
       WRITE: / 'Error'.
       MESSAGE lx_error TYPE 'E'.
@@ -117,8 +115,6 @@ FORM put
           iv_url         = lo_online->get_url( )
           iv_branch_name = lo_online->get_selected_branch( ) ).
 
-    CATCH zcx_updownci_exception INTO DATA(lx_updownci).
-      WRITE: / lx_updownci->iv_text.
     CATCH cx_static_check INTO DATA(lx_error).
       WRITE: / 'Error'.
       MESSAGE lx_error TYPE 'E'.
