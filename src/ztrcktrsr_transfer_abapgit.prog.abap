@@ -15,7 +15,7 @@ INITIALIZATION.
   DATA(text) = NEW cl_gui_textedit( parent = dock ).
   text->set_readonly_mode( 0 ).
 
-  p_gitusr = zcl_abapgit_user_master_record=>get_instance( sy-uname  )->get_email( ).
+  p_gitusr = zcl_abapgit_user_record=>get_instance( sy-uname  )->get_email( ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_file.
   PERFORM f4_filename.
