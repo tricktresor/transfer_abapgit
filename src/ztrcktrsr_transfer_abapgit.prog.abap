@@ -1,13 +1,13 @@
 REPORT ztrcktrsr_transfer_abapgit.
 
 PARAMETERS p_repo TYPE zabapgit-value OBLIGATORY MATCHCODE OBJECT zabapgit_repo.
-PARAMETERS p_path type text100        OBLIGATORY DEFAULT '/'.
+PARAMETERS p_path TYPE text100        OBLIGATORY DEFAULT '/'.
 PARAMETERS p_file TYPE text100        OBLIGATORY LOWER CASE.
 SELECTION-SCREEN PUSHBUTTON /35(30) TEXT-get USER-COMMAND $get.
 
 SELECTION-SCREEN SKIP 1.
-PARAMETERS p_gitusr TYPE string DEFAULT '' LOWER CASE.
-PARAMETERS p_gitpwd TYPE string            LOWER CASE.
+PARAMETERS p_gitusr TYPE string DEFAULT '' LOWER CASE OBLIGATORY.
+PARAMETERS p_gitpwd TYPE string            LOWER CASE OBLIGATORY.
 SELECTION-SCREEN PUSHBUTTON /35(30) TEXT-put USER-COMMAND $put.
 
 INITIALIZATION.
@@ -39,7 +39,7 @@ AT SELECTION-SCREEN.
 
 FORM get
   USING
-    path type text100
+    path TYPE text100
     file TYPE text100.
 
   CHECK file IS NOT INITIAL.
@@ -56,7 +56,6 @@ FORM get
       cl_gui_cfw=>flush( ).
 
     CATCH cx_static_check INTO DATA(lx_error).
-      WRITE: / 'Error'.
       MESSAGE lx_error TYPE 'E'.
   ENDTRY.
 
@@ -64,7 +63,7 @@ ENDFORM.
 
 FORM put
   USING
-    path type text100
+    path TYPE text100
     file TYPE text100.
 
   TRY.
@@ -96,27 +95,16 @@ FORM put
           iv_merge_source = lo_online->get_current_remote( ) ).
 
       lo_stage->add(
-        iv_path     = conv #( path )
+        iv_path     = CONV #( path )
         iv_filename = lv_filename
         iv_data     = lv_data ).
 
-      DATA(lt_objects) = lo_online->get_objects( ).
-      DATA(lv_parent)  = lt_objects[ type = 'commit' ]-sha1.
-*
-*      data(f) = new ZCL_ABAPGIT_GIT_BRANCH_LIST( ).
-**      f->find_by_name
-
-      zcl_abapgit_git_porcelain=>push(
+      lo_online->push(
         EXPORTING
-          is_comment     = ls_comment
-          io_stage       = lo_stage
-          it_old_objects = lt_objects
-          iv_parent      = lv_parent
-          iv_url         = lo_online->get_url( )
-          iv_branch_name = lo_online->get_selected_branch( ) ).
+          is_comment = ls_comment
+          io_stage   = lo_stage   ).
 
     CATCH cx_static_check INTO DATA(lx_error).
-      WRITE: / 'Error'.
       MESSAGE lx_error TYPE 'E'.
   ENDTRY.
 
